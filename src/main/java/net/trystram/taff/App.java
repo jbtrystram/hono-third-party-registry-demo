@@ -20,8 +20,8 @@ public class App {
 
         // AMQP server properties
         ServiceConfigProperties registrationProps = new ServiceConfigProperties();
-        registrationProps.setInsecurePort(2627);
-        registrationProps.setPort(2626);
+        registrationProps.setInsecurePort(5672);
+        //registrationProps.setPort(2626);
         registrationProps.setBindAddress("0.0.0.0");
 
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
