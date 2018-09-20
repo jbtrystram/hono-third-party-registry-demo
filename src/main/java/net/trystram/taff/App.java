@@ -4,6 +4,9 @@ import io.vertx.core.Vertx;
 import org.eclipse.hono.config.ServiceConfigProperties;
 import org.eclipse.hono.config.SignatureSupportingConfigProperties;
 import org.eclipse.hono.deviceregistry.DeviceRegistryAmqpServer;
+import org.eclipse.hono.service.auth.AuthorizationService;
+import org.eclipse.hono.service.auth.ClaimsBasedAuthorizationService;
+import org.eclipse.hono.service.auth.impl.FileBasedAuthenticationService;
 import org.eclipse.hono.service.credentials.BaseCredentialsService;
 import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
 import org.eclipse.hono.service.registration.BaseRegistrationService;
@@ -160,6 +163,7 @@ public class App {
         registrationProps.setInsecurePort(25672);
         //registrationProps.setPort(2626);
         registrationProps.setBindAddress("0.0.0.0");
+        registrationProps.setNetworkDebugLoggingEnabled(true);
 
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
         server.setConfig(registrationProps);
@@ -167,6 +171,9 @@ public class App {
         server.addEndpoint(new RegistrationAmqpEndpoint(vertx));
         server.addEndpoint(new TenantAmqpEndpoint(vertx));
         server.addEndpoint(new CredentialsAmqpEndpoint(vertx));
+
+        server.setSaslAuthenticatorFactory();
+        server.setAuthorizationService(auth);
 
         vertx.deployVerticle(server);
 

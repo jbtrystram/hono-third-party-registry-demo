@@ -171,6 +171,11 @@
           <artifactId>camel-core</artifactId>
           <version>2.16.3</version>
       </dependency>
+      <dependency>
+          <groupId>org.eclipse.hono</groupId>
+          <artifactId>hono-service-auth</artifactId>
+          <version>0.8-M1-SNAPSHOT</version>
+      </dependency>
 
 
   </dependencies>
