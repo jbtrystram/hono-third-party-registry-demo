@@ -5,10 +5,12 @@ import org.eclipse.hono.config.ServiceConfigProperties;
 import org.eclipse.hono.config.SignatureSupportingConfigProperties;
 import org.eclipse.hono.deviceregistry.DeviceRegistryAmqpServer;
 import org.eclipse.hono.service.credentials.BaseCredentialsService;
+import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
 import org.eclipse.hono.service.registration.BaseRegistrationService;
 import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
 import org.eclipse.hono.service.tenant.BaseTenantService;
+import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.broker.BrokerService;
 import org.eclipse.kapua.broker.core.BrokerJAXBContextProvider;
@@ -161,7 +163,10 @@ public class App {
 
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
         server.setConfig(registrationProps);
+
         server.addEndpoint(new RegistrationAmqpEndpoint(vertx));
+        server.addEndpoint(new TenantAmqpEndpoint(vertx));
+        server.addEndpoint(new CredentialsAmqpEndpoint(vertx));
 
         vertx.deployVerticle(server);
 
