@@ -163,7 +163,6 @@ public class App {
         registrationProps.setInsecurePort(25672);
         //registrationProps.setPort(2626);
         registrationProps.setBindAddress("0.0.0.0");
-        registrationProps.setNetworkDebugLoggingEnabled(true);
 
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
         server.setConfig(registrationProps);
