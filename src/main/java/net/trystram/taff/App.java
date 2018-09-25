@@ -1,11 +1,23 @@
 package net.trystram.taff;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import org.eclipse.hono.auth.Activity;
+import org.eclipse.hono.auth.Authorities;
+import org.eclipse.hono.auth.AuthoritiesImpl;
+import org.eclipse.hono.auth.HonoUser;
+import org.eclipse.hono.auth.HonoUserAdapter;
 import org.eclipse.hono.config.ServiceConfigProperties;
 import org.eclipse.hono.config.SignatureSupportingConfigProperties;
 import org.eclipse.hono.deviceregistry.DeviceRegistryAmqpServer;
+import org.eclipse.hono.service.auth.AuthenticationService;
 import org.eclipse.hono.service.auth.AuthorizationService;
 import org.eclipse.hono.service.auth.ClaimsBasedAuthorizationService;
+import org.eclipse.hono.service.auth.HonoSaslAuthenticatorFactory;
+import org.eclipse.hono.service.auth.impl.AuthenticationServerConfigProperties;
 import org.eclipse.hono.service.auth.impl.FileBasedAuthenticationService;
 import org.eclipse.hono.service.credentials.BaseCredentialsService;
 import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
@@ -14,6 +26,8 @@ import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
 import org.eclipse.hono.service.tenant.BaseTenantService;
 import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
+import org.eclipse.hono.util.EventConstants;
+import org.eclipse.hono.util.TenantConstants;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.broker.BrokerService;
 import org.eclipse.kapua.broker.core.BrokerJAXBContextProvider;
@@ -55,6 +69,7 @@ import org.eclipse.kapua.service.user.User;
 import org.eclipse.kapua.service.user.UserCreator;
 import org.eclipse.kapua.service.user.UserService;
 import org.eclipse.kapua.service.user.internal.UserFactoryImpl;
+import org.springframework.core.io.FileSystemResource;
 
 import java.util.*;
 
@@ -161,18 +176,29 @@ public class App {
         // AMQP server properties
         ServiceConfigProperties registrationProps = new ServiceConfigProperties();
         registrationProps.setInsecurePort(25672);
+        //registrationProps.setPort(25672);
         //registrationProps.setPort(2626);
         registrationProps.setBindAddress("0.0.0.0");
+        registrationProps.setKeyStorePath("src/test/resources/certificates/deviceRegistryKeyStore.p12");
+        registrationProps.setKeyStorePassword("deviceregistrykeys");
 
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
         server.setConfig(registrationProps);
 
         server.addEndpoint(new RegistrationAmqpEndpoint(vertx));
-        server.addEndpoint(new TenantAmqpEndpoint(vertx));
+        TenantAmqpEndpoint tenantAmqpEndpoint = new TenantAmqpEndpoint(vertx);
+        tenantAmqpEndpoint.setConfiguration(registrationProps);
+        server.addEndpoint(tenantAmqpEndpoint);
         server.addEndpoint(new CredentialsAmqpEndpoint(vertx));
 
-        server.setSaslAuthenticatorFactory();
-        server.setAuthorizationService(auth);
+        AuthenticationServerConfigProperties authProps = new AuthenticationServerConfigProperties();
+        authProps.setPermissionsPath(new FileSystemResource("src/main/resources/permissions.json"));
+        AuthenticationService auth = new FileBasedAuthenticationService();
+
+        //server.setSaslAuthenticatorFactory(new HonoSaslAuthenticatorFactory(auth));
+        server.setSaslAuthenticatorFactory(new HonoSaslAuthenticatorFactory(createAuthenticationService(createUser())));
+
+        server.setAuthorizationService(new ClaimsBasedAuthorizationService());
 
         vertx.deployVerticle(server);
 
@@ -191,4 +217,35 @@ public class App {
         KapuaCredentialsService credentialsService = new KapuaCredentialsService();
         vertx.deployVerticle(credentialsService);
     }
+
+    public static AuthenticationService createAuthenticationService(final HonoUser returnedUser) {
+        return new AuthenticationService() {
+
+            @Override
+            public void authenticate(final JsonObject authRequest, final Handler<AsyncResult<HonoUser>> authenticationResultHandler) {
+                authenticationResultHandler.handle(Future.succeededFuture(returnedUser));
+            }
+        };
+    }
+
+    private static HonoUser createUser() {
+
+        final Authorities authorities = new AuthoritiesImpl()
+                .addResource(TenantConstants.TENANT_ENDPOINT, "*", new Activity[]{ Activity.READ, Activity.WRITE })
+                .addResource(TenantConstants.TENANT_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE});
+
+
+        return new HonoUserAdapter() {
+            @Override
+            public String getName() {
+                return "test-client";
+            }
+
+            @Override
+            public Authorities getAuthorities() {
+                return authorities;
+            }
+        };
+    }
+
 }
