@@ -179,10 +179,8 @@ public class App {
         //registrationProps.setPort(25672);
         //registrationProps.setPort(2626);
         registrationProps.setBindAddress("0.0.0.0");
-        registrationProps.setNetworkDebugLoggingEnabled(true);
         registrationProps.setKeyStorePath("src/test/resources/certificates/deviceRegistryKeyStore.p12");
         registrationProps.setKeyStorePassword("deviceregistrykeys");
-
 
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
         server.setConfig(registrationProps);
