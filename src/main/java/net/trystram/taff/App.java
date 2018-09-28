@@ -24,6 +24,7 @@ import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
 import org.eclipse.hono.service.registration.BaseRegistrationService;
 import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
+import org.eclipse.hono.service.registration.RegistrationService;
 import org.eclipse.hono.service.tenant.BaseTenantService;
 import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
 import org.eclipse.hono.util.EventConstants;
@@ -177,7 +178,6 @@ public class App {
         ServiceConfigProperties registrationProps = new ServiceConfigProperties();
         registrationProps.setInsecurePort(25672);
         //registrationProps.setPort(25672);
-        //registrationProps.setPort(2626);
         registrationProps.setBindAddress("0.0.0.0");
         registrationProps.setKeyStorePath("src/test/resources/certificates/deviceRegistryKeyStore.p12");
         registrationProps.setKeyStorePassword("deviceregistrykeys");
@@ -185,17 +185,27 @@ public class App {
         DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
         server.setConfig(registrationProps);
 
-        server.addEndpoint(new RegistrationAmqpEndpoint(vertx));
+        // Setup endpoints
+        // Tenant endpoint
         TenantAmqpEndpoint tenantAmqpEndpoint = new TenantAmqpEndpoint(vertx);
         tenantAmqpEndpoint.setConfiguration(registrationProps);
         server.addEndpoint(tenantAmqpEndpoint);
-        server.addEndpoint(new CredentialsAmqpEndpoint(vertx));
+
+        // Registration Endpoint
+        RegistrationAmqpEndpoint registrationAmqpEndpoint = new RegistrationAmqpEndpoint(vertx);
+        registrationAmqpEndpoint.setConfiguration(registrationProps);
+        server.addEndpoint(registrationAmqpEndpoint);
+
+        // credentials endpoint
+        CredentialsAmqpEndpoint credentialsAmqpEndpoint = new CredentialsAmqpEndpoint(vertx);
+        credentialsAmqpEndpoint.setConfiguration(registrationProps);
+        server.addEndpoint(credentialsAmqpEndpoint);
+
 
         AuthenticationServerConfigProperties authProps = new AuthenticationServerConfigProperties();
         authProps.setPermissionsPath(new FileSystemResource("src/main/resources/permissions.json"));
         AuthenticationService auth = new FileBasedAuthenticationService();
 
-        //server.setSaslAuthenticatorFactory(new HonoSaslAuthenticatorFactory(auth));
         server.setSaslAuthenticatorFactory(new HonoSaslAuthenticatorFactory(createAuthenticationService(createUser())));
 
         server.setAuthorizationService(new ClaimsBasedAuthorizationService());
