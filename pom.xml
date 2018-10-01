@@ -85,7 +85,7 @@
     </plugins>
   </build>
 
-  <repositories>
+<!--  <repositories>
       <repository>
         <id>Local-libraries</id>
         <name>In-project-Libraries</name>
@@ -95,7 +95,7 @@
           <id>maven-central</id>
           <url>http://repo1.maven.org/maven2</url>
       </repository>
-  </repositories>
+  </repositories>-->
 
   <dependencies>
     <dependency>
@@ -114,13 +114,13 @@
     <dependency>
     <groupId>org.eclipse.hono</groupId>
     <artifactId>hono-service-base</artifactId>
-    <version>0.8-M1-SNAPSHOT</version>
+    <version>0.8-M2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.hono</groupId>
       <artifactId>hono-service-device-registry</artifactId>
-      <version>0.8-M1-SNAPSHOT</version>
+      <version>0.8-M2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
