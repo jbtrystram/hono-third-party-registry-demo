@@ -9,8 +9,13 @@
   <version>1.0-SNAPSHOT</version>
   <name>kapuaDeviceRegistry</name>
 
+    <properties>
+        <hono.version>0.8-M2-SNAPSHOT</hono.version>
+    </properties>
 
-  <build>
+
+
+    <build>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -85,18 +90,6 @@
     </plugins>
   </build>
 
-<!--  <repositories>
-      <repository>
-        <id>Local-libraries</id>
-        <name>In-project-Libraries</name>
-        <url>file://${project.basedir}/lib</url>
-      </repository>
-      <repository>
-          <id>maven-central</id>
-          <url>http://repo1.maven.org/maven2</url>
-      </repository>
-  </repositories>-->
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -114,13 +107,13 @@
     <dependency>
     <groupId>org.eclipse.hono</groupId>
     <artifactId>hono-service-base</artifactId>
-    <version>0.8-M2-SNAPSHOT</version>
+    <version>${hono.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.hono</groupId>
       <artifactId>hono-service-device-registry</artifactId>
-      <version>0.8-M2-SNAPSHOT</version>
+      <version>${hono.version}</version>
     </dependency>
 
     <dependency>
@@ -174,7 +167,7 @@
       <dependency>
           <groupId>org.eclipse.hono</groupId>
           <artifactId>hono-service-auth</artifactId>
-          <version>0.8-M1-SNAPSHOT</version>
+          <version>${hono.version}</version>
       </dependency>
 
 
