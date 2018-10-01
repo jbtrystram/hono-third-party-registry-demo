@@ -213,11 +213,11 @@ public class App {
         vertx.deployVerticle(server);
 
         // registration service
-        /* KapuaRegistrationService registrationService = new KapuaRegistrationService();
+         KapuaRegistrationService registrationService = new KapuaRegistrationService();
         SignatureSupportingConfigProperties signProps = new SignatureSupportingConfigProperties();
-        signProps.setKeyPath("/home/jibou/github/hono/demo-certs/certs/device-registry-key.pem");
+        signProps.setKeyPath("src/main/resources/certificates/jwt/device-registry-key.pem");
         registrationService.setRegistrationAssertionFactory(RegistrationAssertionHelperImpl.forSigning(vertx, signProps));
-        vertx.deployVerticle(registrationService); */
+        vertx.deployVerticle(registrationService);
 
         // tenant service
         KapuaTenantService tenantService = new KapuaTenantService();
