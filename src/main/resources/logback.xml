@@ -19,6 +19,7 @@
     </appender>
 
     <logger name="liquibase" level="WARN" />
+    <!-- <logger name="org.eclipse.hono" level="TRACE"/> -->
 
     <root level="DEBUG">
         <appender-ref ref="STDOUT" />

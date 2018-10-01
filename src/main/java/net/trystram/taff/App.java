@@ -113,7 +113,7 @@ public class App {
 
             // Create account
             AccountFactory accountFactory = locator.getFactory(AccountFactory.class);
-            AccountCreator accountCreator = accountFactory.newCreator(KapuaId.ONE, "test-tenant");
+            AccountCreator accountCreator = accountFactory.newCreator(KapuaId.ONE, "DEFAULT_TENANT");
             accountCreator.setOrganizationName("Test Tenant");
             accountCreator.setOrganizationEmail("tenant@example.com");
             Account account = accountService.create(accountCreator);
@@ -170,7 +170,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
-       setupKapua();
+        setupKapua();
 
         Vertx vertx = Vertx.vertx();
 
@@ -213,11 +213,11 @@ public class App {
         vertx.deployVerticle(server);
 
         // registration service
-        KapuaRegistrationService registrationService = new KapuaRegistrationService();
+        /* KapuaRegistrationService registrationService = new KapuaRegistrationService();
         SignatureSupportingConfigProperties signProps = new SignatureSupportingConfigProperties();
         signProps.setKeyPath("/home/jibou/github/hono/demo-certs/certs/device-registry-key.pem");
         registrationService.setRegistrationAssertionFactory(RegistrationAssertionHelperImpl.forSigning(vertx, signProps));
-        vertx.deployVerticle(registrationService);
+        vertx.deployVerticle(registrationService); */
 
         // tenant service
         KapuaTenantService tenantService = new KapuaTenantService();
@@ -242,7 +242,8 @@ public class App {
 
         final Authorities authorities = new AuthoritiesImpl()
                 .addResource(TenantConstants.TENANT_ENDPOINT, "*", new Activity[]{ Activity.READ, Activity.WRITE })
-                .addResource(TenantConstants.TENANT_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE});
+                .addResource(TenantConstants.TENANT_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
+                .addOperation(TenantConstants.TENANT_ENDPOINT, "DEFAULT_TENANT", "get");
 
 
         return new HonoUserAdapter() {
