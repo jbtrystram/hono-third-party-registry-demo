@@ -4,30 +4,21 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.eclipse.hono.auth.Activity;
-import org.eclipse.hono.auth.Authorities;
-import org.eclipse.hono.auth.AuthoritiesImpl;
-import org.eclipse.hono.auth.HonoUser;
-import org.eclipse.hono.auth.HonoUserAdapter;
+import org.eclipse.hono.auth.*;
 import org.eclipse.hono.config.ServiceConfigProperties;
 import org.eclipse.hono.config.SignatureSupportingConfigProperties;
 import org.eclipse.hono.deviceregistry.DeviceRegistryAmqpServer;
 import org.eclipse.hono.service.auth.AuthenticationService;
-import org.eclipse.hono.service.auth.AuthorizationService;
 import org.eclipse.hono.service.auth.ClaimsBasedAuthorizationService;
 import org.eclipse.hono.service.auth.HonoSaslAuthenticatorFactory;
 import org.eclipse.hono.service.auth.impl.AuthenticationServerConfigProperties;
 import org.eclipse.hono.service.auth.impl.FileBasedAuthenticationService;
-import org.eclipse.hono.service.credentials.BaseCredentialsService;
 import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
-import org.eclipse.hono.service.registration.BaseRegistrationService;
 import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
-import org.eclipse.hono.service.registration.RegistrationService;
-import org.eclipse.hono.service.tenant.BaseTenantService;
 import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
-import org.eclipse.hono.util.EventConstants;
 import org.eclipse.hono.util.TenantConstants;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.broker.BrokerService;
@@ -39,7 +30,6 @@ import org.eclipse.kapua.commons.util.xml.XmlUtil;
 import org.eclipse.kapua.hono.KapuaCredentialsService;
 import org.eclipse.kapua.hono.KapuaRegistrationService;
 import org.eclipse.kapua.hono.KapuaTenantService;
-
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.domain.Domain;
@@ -111,14 +101,35 @@ public class App {
             deviceRegistryService = locator.getService(DeviceRegistryService.class);
             accessInfoService = locator.getService(AccessInfoService.class);
 
-            // Create account
+            // Create DEFAULT_TENANT account
             AccountFactory accountFactory = locator.getFactory(AccountFactory.class);
             AccountCreator accountCreator = accountFactory.newCreator(KapuaId.ONE, "DEFAULT_TENANT");
             accountCreator.setOrganizationName("Test Tenant");
             accountCreator.setOrganizationEmail("tenant@example.com");
+            Properties tenantProps = new Properties();
+            tenantProps.setProperty("trusted-ca", new JsonObject()
+                    .put("subject-dn", "CN=ca,OU=Hono,O=Eclipse")
+                    .put("public-key", "NOTAPUBLICKEY")
+                    .encode());
+            accountCreator.setEntityAttributes(tenantProps);
             Account account = accountService.create(accountCreator);
 
+            // Create HTTP_ONLY account
+            accountCreator = accountFactory.newCreator(KapuaId.ONE, "HTTP_ONLY");
+            accountCreator.setOrganizationName("Test Tenant");
+            accountCreator.setOrganizationEmail("tenant@example.com");
+            accountCreator.setEntityAttributes(tenantProps);
+            Properties adaptersProps = new Properties();
+            adaptersProps.setProperty("adapters", new JsonArray().add(
+                    new JsonObject().put("type", "hono-http")
+                    .put("enabled", true)
+                    .put("device-authentication-required", true))
+                    .encode());
+            Account account2 = accountService.create(accountCreator);
+
+
             userService.setConfigValues(account.getId(), account.getScopeId(), valueMap);
+            userService.setConfigValues(account2.getId(), account2.getScopeId(), valueMap);
 
             // Create user
             UserCreator userCreator = new UserFactoryImpl().newCreator(account.getId(), "test-user");
