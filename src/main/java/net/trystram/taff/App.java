@@ -118,13 +118,17 @@ public class App {
             accountCreator = accountFactory.newCreator(KapuaId.ONE, "HTTP_ONLY");
             accountCreator.setOrganizationName("Test Tenant");
             accountCreator.setOrganizationEmail("tenant@example.com");
-            accountCreator.setEntityAttributes(tenantProps);
-            Properties adaptersProps = new Properties();
-            adaptersProps.setProperty("adapters", new JsonArray().add(
+            tenantProps = new Properties();
+            tenantProps.setProperty("trusted-ca", new JsonObject()
+                    .put("subject-dn", "CN=ca-http,OU=Hono,O=Eclipse")
+                    .put("public-key", "NOTAPUBLICKEY")
+                    .encode());
+            tenantProps.setProperty("adapters", new JsonArray().add(
                     new JsonObject().put("type", "hono-http")
                     .put("enabled", true)
                     .put("device-authentication-required", true))
                     .encode());
+            accountCreator.setEntityAttributes(tenantProps);
             Account account2 = accountService.create(accountCreator);
 
 
