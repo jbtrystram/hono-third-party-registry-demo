@@ -13,8 +13,6 @@
         <hono.version>0.8-M2-SNAPSHOT</hono.version>
     </properties>
 
-
-
     <build>
     <plugins>
       <plugin>
@@ -26,73 +24,20 @@
         </configuration>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-            <execution>
-                <phase>package</phase>
-                <goals>
-                    <goal>shade</goal>
-                </goals>
-                <configuration>
-                    <transformers>
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <manifestEntries>
-                                <Main-Class>net.trystram.taff.App</Main-Class>
-                            </manifestEntries>
-                        </transformer>
-                    </transformers>
-                    <artifactSet/>
-                    <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-fat.jar</outputFile>
-                </configuration>
-            </execution>
-        </executions>
+    <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <configuration>
+            <mainClass>net.trystram.taff.App</mainClass>
+        </configuration>
     </plugin>
-
-
-
-        <plugin>
-            <groupId>io.fabric8</groupId>
-            <artifactId>docker-maven-plugin</artifactId>
-            <version>0.26.1</version>
-            <configuration>
-                <images>
-                    <image>
-                        <name>eclipse/kapua/hono-integration:${project.version}</name>
-                        <build>
-                            <dockerFile>${project.basedir}/Dockerfile</dockerFile>
-                        </build>
-                    </image>
-                </images>
-            </configuration>
-            <executions>
-                <execution>
-                    <id>docker:start</id>
-                    <phase>install</phase>
-                    <goals>
-                        <goal>run</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.6.0</version>
-            <configuration>
-                <mainClass>net.trystram.taff.App</mainClass>
-            </configuration>
-        </plugin>
     </plugins>
   </build>
 
   <dependencies>
     <dependency>
-      <groupId>org.eclipse.kapua.hono</groupId>
+      <groupId>org.eclipse.kapua</groupId>
       <artifactId>hono-integration</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
