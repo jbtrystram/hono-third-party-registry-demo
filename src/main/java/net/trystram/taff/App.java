@@ -19,6 +19,8 @@ import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
 import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
+import org.eclipse.hono.util.CredentialsConstants;
+import org.eclipse.hono.util.RegistrationConstants;
 import org.eclipse.hono.util.TenantConstants;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.broker.BrokerService;
@@ -107,9 +109,9 @@ public class App {
             accountCreator.setOrganizationName("Test Tenant");
             accountCreator.setOrganizationEmail("tenant@example.com");
             Properties tenantProps = new Properties();
-            tenantProps.setProperty("trusted-ca", new JsonObject()
-                    .put("subject-dn", "CN=ca,OU=Hono,O=Eclipse")
-                    .put("public-key", "NOTAPUBLICKEY")
+            tenantProps.setProperty(TenantConstants.FIELD_PAYLOAD_TRUSTED_CA, new JsonObject()
+                    .put(TenantConstants.FIELD_PAYLOAD_SUBJECT_DN, "CN=ca,OU=Hono,O=Eclipse")
+                    .put(TenantConstants.FIELD_PAYLOAD_PUBLIC_KEY, "NOTAPUBLICKEY")
                     .encode());
             accountCreator.setEntityAttributes(tenantProps);
             Account account = accountService.create(accountCreator);
@@ -119,14 +121,14 @@ public class App {
             accountCreator.setOrganizationName("Test Tenant");
             accountCreator.setOrganizationEmail("tenant@example.com");
             tenantProps = new Properties();
-            tenantProps.setProperty("trusted-ca", new JsonObject()
-                    .put("subject-dn", "CN=ca-http,OU=Hono,O=Eclipse")
-                    .put("public-key", "NOTAPUBLICKEY")
+            tenantProps.setProperty(TenantConstants.FIELD_PAYLOAD_TRUSTED_CA, new JsonObject()
+                    .put(TenantConstants.FIELD_PAYLOAD_SUBJECT_DN, "CN=ca-http,OU=Hono,O=Eclipse")
+                    .put(TenantConstants.FIELD_PAYLOAD_PUBLIC_KEY, "NOTAPUBLICKEY")
                     .encode());
-            tenantProps.setProperty("adapters", new JsonArray().add(
-                    new JsonObject().put("type", "hono-http")
-                    .put("enabled", true)
-                    .put("device-authentication-required", true))
+            tenantProps.setProperty(TenantConstants.FIELD_ADAPTERS, new JsonArray().add(
+                    new JsonObject().put(TenantConstants.FIELD_ADAPTERS_TYPE, "hono-http")
+                    .put(TenantConstants.FIELD_ENABLED, true)
+                    .put(TenantConstants.FIELD_ADAPTERS_DEVICE_AUTHENTICATION_REQUIRED, true))
                     .encode());
             accountCreator.setEntityAttributes(tenantProps);
             Account account2 = accountService.create(accountCreator);
@@ -135,13 +137,57 @@ public class App {
             userService.setConfigValues(account.getId(), account.getScopeId(), valueMap);
             userService.setConfigValues(account2.getId(), account2.getScopeId(), valueMap);
 
-            // Create user
-            UserCreator userCreator = new UserFactoryImpl().newCreator(account.getId(), "test-user");
+            // Create user gateway
+            Properties userprops = new Properties();
+            userprops.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "gw-1");
+            userprops.setProperty(CredentialsConstants.FIELD_TYPE, CredentialsConstants.SECRETS_TYPE_HASHED_PASSWORD);
+            userprops.setProperty(CredentialsConstants.FIELD_AUTH_ID, "gateway");
+            userprops.setProperty("client-id", "gateway-one");
+            userprops.setProperty(CredentialsConstants.FIELD_ENABLED, "true");
+            userprops.setProperty(CredentialsConstants.FIELD_SECRETS,
+                    new JsonArray().add(new JsonObject()
+                    .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2018-01-01T00:00:00+01:00")
+                    .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
+                    .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
+                    .put(CredentialsConstants.FIELD_SECRETS_SALT, "Z3dzYWx0")
+                    .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "CrHirmXdU20qORDRE5gbphS9vUCdl2NhEaAikw6EGTwBevbs1rCwml82cONPNxugZ1D0QHQSnbY4gWJQJi6P4g=="))
+                    .encode());
+
+            UserCreator userCreator = new UserFactoryImpl().newCreator(account.getId(), userprops.getProperty(CredentialsConstants.FIELD_AUTH_ID));
+            userCreator.setEntityAttributes(userprops);
             User user = userService.create(userCreator);
+
+            // Create user sensor1
+            userprops = new Properties();
+            userprops.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "4711");
+            userprops.setProperty(CredentialsConstants.FIELD_TYPE, CredentialsConstants.SECRETS_TYPE_HASHED_PASSWORD);
+            userprops.setProperty(CredentialsConstants.FIELD_AUTH_ID, "sensor1");
+            userprops.setProperty(CredentialsConstants.FIELD_ENABLED, "true");
+            userprops.setProperty(CredentialsConstants.FIELD_SECRETS,
+                    new JsonArray().add(new JsonObject()
+                                .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-01T14:00:00+01:00")
+                                .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
+                                .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
+                                .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubw==")
+                                .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "C9/T62m1tT4ZxxqyIiyN9fvoEqmL0qnM4/+M+GHHDzr0QzzkAUdGYyJBfxRSe4upDzb6TSC4k5cpZG17p4QCvA===="))
+                            .add(new JsonObject()
+                                 .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-15T14:00:00+01:00")
+                                 .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-05-01T14:00:00+01:00")
+                                 .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
+                                 .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubzI=")
+                                 .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "QDhkSQcm0HNBybnuc5irvPIgNUJn0iVoQnFSoltLOsDlfxhcQWa99l8Dhh67jSKBr7fXeSvFZ1mEojReAXz18A=="))
+                            .encode());
+
+            userCreator = new UserFactoryImpl().newCreator(account.getId(), userprops.getProperty(CredentialsConstants.FIELD_AUTH_ID));
+            userCreator.setEntityAttributes(userprops);
+            User user2 = userService.create(userCreator);
 
             // Create credentials
             CredentialCreator credentialCreator;
-            credentialCreator = new CredentialFactoryImpl().newCreator(account.getId(), user.getId(), CredentialType.PASSWORD, "verysecret", CredentialStatus.ENABLED, null);
+            credentialCreator = new CredentialFactoryImpl().newCreator(account.getId(), user.getId(), CredentialType.PASSWORD, "gw-secret", CredentialStatus.ENABLED, null);
+            credentialService.create(credentialCreator);
+
+            credentialCreator = new CredentialFactoryImpl().newCreator(account.getId(), user2.getId(), CredentialType.PASSWORD, "hono-secret", CredentialStatus.ENABLED, null);
             credentialService.create(credentialCreator);
 
             // Permissions
@@ -256,9 +302,18 @@ public class App {
     private static HonoUser createUser() {
 
         final Authorities authorities = new AuthoritiesImpl()
+                // tenant authorisations
                 .addResource(TenantConstants.TENANT_ENDPOINT, "*", new Activity[]{ Activity.READ, Activity.WRITE })
                 .addResource(TenantConstants.TENANT_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
-                .addOperation(TenantConstants.TENANT_ENDPOINT, "DEFAULT_TENANT", "get");
+                .addOperation(TenantConstants.TENANT_ENDPOINT, "DEFAULT_TENANT", "get")
+                //credentials authorisations
+                .addResource(CredentialsConstants.CREDENTIALS_ENDPOINT, "*", new Activity[] { Activity.READ, Activity.WRITE })
+                .addResource(CredentialsConstants.CREDENTIALS_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
+                .addOperation(CredentialsConstants.CREDENTIALS_ENDPOINT, "DEFAULT_TENANT", "get")
+                //Device Registry authorisations
+                .addResource(RegistrationConstants.REGISTRATION_ENDPOINT, "*", new Activity[] { Activity.READ, Activity.WRITE })
+                .addResource(RegistrationConstants.REGISTRATION_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
+                .addOperation(RegistrationConstants.REGISTRATION_ENDPOINT, "DEFAULT_TENANT", "get");
 
 
         return new HonoUserAdapter() {
