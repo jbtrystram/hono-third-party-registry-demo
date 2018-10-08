@@ -1,26 +1,8 @@
-package net.trystram.taff;
+package com.redhat.iot;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.eclipse.hono.auth.*;
-import org.eclipse.hono.config.ServiceConfigProperties;
-import org.eclipse.hono.config.SignatureSupportingConfigProperties;
-import org.eclipse.hono.deviceregistry.DeviceRegistryAmqpServer;
-import org.eclipse.hono.service.auth.AuthenticationService;
-import org.eclipse.hono.service.auth.ClaimsBasedAuthorizationService;
-import org.eclipse.hono.service.auth.HonoSaslAuthenticatorFactory;
-import org.eclipse.hono.service.auth.impl.AuthenticationServerConfigProperties;
-import org.eclipse.hono.service.auth.impl.FileBasedAuthenticationService;
-import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
-import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
-import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
-import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
 import org.eclipse.hono.util.CredentialsConstants;
-import org.eclipse.hono.util.RegistrationConstants;
 import org.eclipse.hono.util.TenantConstants;
 import org.eclipse.kapua.KapuaException;
 import org.eclipse.kapua.broker.BrokerService;
@@ -29,9 +11,6 @@ import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
 import org.eclipse.kapua.commons.util.xml.JAXBContextProvider;
 import org.eclipse.kapua.commons.util.xml.XmlUtil;
-import org.eclipse.kapua.hono.KapuaCredentialsService;
-import org.eclipse.kapua.hono.KapuaRegistrationService;
-import org.eclipse.kapua.hono.KapuaTenantService;
 import org.eclipse.kapua.locator.KapuaLocator;
 import org.eclipse.kapua.model.domain.Actions;
 import org.eclipse.kapua.model.domain.Domain;
@@ -62,14 +41,11 @@ import org.eclipse.kapua.service.user.User;
 import org.eclipse.kapua.service.user.UserCreator;
 import org.eclipse.kapua.service.user.UserService;
 import org.eclipse.kapua.service.user.internal.UserFactoryImpl;
-import org.springframework.core.io.FileSystemResource;
 
 import java.util.*;
 
-public class App {
+public class SimpleKapuaInstance {
 
-
-    // kapua stuff
     public static AccountService accountService;
     public static UserService userService;
     public static CredentialService credentialService;
@@ -78,7 +54,7 @@ public class App {
 
     private static DBHelper dbHelper = new DBHelper();
 
-    private static void setupKapua() throws KapuaException {
+    public static void start() throws KapuaException {
 
         dbHelper.setup();
 
@@ -127,8 +103,8 @@ public class App {
                     .encode());
             tenantProps.setProperty(TenantConstants.FIELD_ADAPTERS, new JsonArray().add(
                     new JsonObject().put(TenantConstants.FIELD_ADAPTERS_TYPE, "hono-http")
-                    .put(TenantConstants.FIELD_ENABLED, true)
-                    .put(TenantConstants.FIELD_ADAPTERS_DEVICE_AUTHENTICATION_REQUIRED, true))
+                            .put(TenantConstants.FIELD_ENABLED, true)
+                            .put(TenantConstants.FIELD_ADAPTERS_DEVICE_AUTHENTICATION_REQUIRED, true))
                     .encode());
             accountCreator.setEntityAttributes(tenantProps);
             Account account2 = accountService.create(accountCreator);
@@ -146,12 +122,12 @@ public class App {
             userprops.setProperty(CredentialsConstants.FIELD_ENABLED, "true");
             userprops.setProperty(CredentialsConstants.FIELD_SECRETS,
                     new JsonArray().add(new JsonObject()
-                    .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2018-01-01T00:00:00+01:00")
-                    .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
-                    .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
-                    .put(CredentialsConstants.FIELD_SECRETS_SALT, "Z3dzYWx0")
-                    .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "CrHirmXdU20qORDRE5gbphS9vUCdl2NhEaAikw6EGTwBevbs1rCwml82cONPNxugZ1D0QHQSnbY4gWJQJi6P4g=="))
-                    .encode());
+                            .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2018-01-01T00:00:00+01:00")
+                            .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
+                            .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
+                            .put(CredentialsConstants.FIELD_SECRETS_SALT, "Z3dzYWx0")
+                            .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "CrHirmXdU20qORDRE5gbphS9vUCdl2NhEaAikw6EGTwBevbs1rCwml82cONPNxugZ1D0QHQSnbY4gWJQJi6P4g=="))
+                            .encode());
 
             UserCreator userCreator = new UserFactoryImpl().newCreator(account.getId(), userprops.getProperty(CredentialsConstants.FIELD_AUTH_ID));
             userCreator.setEntityAttributes(userprops);
@@ -165,17 +141,17 @@ public class App {
             userprops.setProperty(CredentialsConstants.FIELD_ENABLED, "true");
             userprops.setProperty(CredentialsConstants.FIELD_SECRETS,
                     new JsonArray().add(new JsonObject()
-                                .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-01T14:00:00+01:00")
-                                .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
-                                .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
-                                .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubw==")
-                                .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "C9/T62m1tT4ZxxqyIiyN9fvoEqmL0qnM4/+M+GHHDzr0QzzkAUdGYyJBfxRSe4upDzb6TSC4k5cpZG17p4QCvA===="))
+                            .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-01T14:00:00+01:00")
+                            .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
+                            .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
+                            .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubw==")
+                            .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "C9/T62m1tT4ZxxqyIiyN9fvoEqmL0qnM4/+M+GHHDzr0QzzkAUdGYyJBfxRSe4upDzb6TSC4k5cpZG17p4QCvA===="))
                             .add(new JsonObject()
-                                 .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-15T14:00:00+01:00")
-                                 .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-05-01T14:00:00+01:00")
-                                 .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
-                                 .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubzI=")
-                                 .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "QDhkSQcm0HNBybnuc5irvPIgNUJn0iVoQnFSoltLOsDlfxhcQWa99l8Dhh67jSKBr7fXeSvFZ1mEojReAXz18A=="))
+                                    .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-15T14:00:00+01:00")
+                                    .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-05-01T14:00:00+01:00")
+                                    .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
+                                    .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubzI=")
+                                    .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "QDhkSQcm0HNBybnuc5irvPIgNUJn0iVoQnFSoltLOsDlfxhcQWa99l8Dhh67jSKBr7fXeSvFZ1mEojReAXz18A=="))
                             .encode());
 
             userCreator = new UserFactoryImpl().newCreator(account.getId(), userprops.getProperty(CredentialsConstants.FIELD_AUTH_ID));
@@ -226,107 +202,5 @@ public class App {
             Device device = deviceRegistryService.create(deviceCreator);
 
         });
-
     }
-
-    public static void main(String[] args) throws Exception {
-
-        setupKapua();
-
-        Vertx vertx = Vertx.vertx();
-
-        // AMQP server properties
-        ServiceConfigProperties registrationProps = new ServiceConfigProperties();
-        registrationProps.setInsecurePort(25672);
-        //registrationProps.setPort(25672);
-        registrationProps.setBindAddress("0.0.0.0");
-        registrationProps.setKeyStorePath("src/test/resources/certificates/deviceRegistryKeyStore.p12");
-        registrationProps.setKeyStorePassword("deviceregistrykeys");
-
-        DeviceRegistryAmqpServer server = new DeviceRegistryAmqpServer();
-        server.setConfig(registrationProps);
-
-        // Setup endpoints
-        // Tenant endpoint
-        TenantAmqpEndpoint tenantAmqpEndpoint = new TenantAmqpEndpoint(vertx);
-        tenantAmqpEndpoint.setConfiguration(registrationProps);
-        server.addEndpoint(tenantAmqpEndpoint);
-
-        // Registration Endpoint
-        RegistrationAmqpEndpoint registrationAmqpEndpoint = new RegistrationAmqpEndpoint(vertx);
-        registrationAmqpEndpoint.setConfiguration(registrationProps);
-        server.addEndpoint(registrationAmqpEndpoint);
-
-        // credentials endpoint
-        CredentialsAmqpEndpoint credentialsAmqpEndpoint = new CredentialsAmqpEndpoint(vertx);
-        credentialsAmqpEndpoint.setConfiguration(registrationProps);
-        server.addEndpoint(credentialsAmqpEndpoint);
-
-
-        AuthenticationServerConfigProperties authProps = new AuthenticationServerConfigProperties();
-        authProps.setPermissionsPath(new FileSystemResource("src/main/resources/permissions.json"));
-        AuthenticationService auth = new FileBasedAuthenticationService();
-
-        server.setSaslAuthenticatorFactory(new HonoSaslAuthenticatorFactory(createAuthenticationService(createUser())));
-
-        server.setAuthorizationService(new ClaimsBasedAuthorizationService());
-
-        vertx.deployVerticle(server);
-
-        // registration service
-         KapuaRegistrationService registrationService = new KapuaRegistrationService();
-        SignatureSupportingConfigProperties signProps = new SignatureSupportingConfigProperties();
-        signProps.setKeyPath("src/main/resources/certificates/jwt/device-registry-key.pem");
-        registrationService.setRegistrationAssertionFactory(RegistrationAssertionHelperImpl.forSigning(vertx, signProps));
-        vertx.deployVerticle(registrationService);
-
-        // tenant service
-        KapuaTenantService tenantService = new KapuaTenantService();
-        vertx.deployVerticle(tenantService);
-
-        //credentials service
-        KapuaCredentialsService credentialsService = new KapuaCredentialsService();
-        vertx.deployVerticle(credentialsService);
-    }
-
-    public static AuthenticationService createAuthenticationService(final HonoUser returnedUser) {
-        return new AuthenticationService() {
-
-            @Override
-            public void authenticate(final JsonObject authRequest, final Handler<AsyncResult<HonoUser>> authenticationResultHandler) {
-                authenticationResultHandler.handle(Future.succeededFuture(returnedUser));
-            }
-        };
-    }
-
-    private static HonoUser createUser() {
-
-        final Authorities authorities = new AuthoritiesImpl()
-                // tenant authorisations
-                .addResource(TenantConstants.TENANT_ENDPOINT, "*", new Activity[]{ Activity.READ, Activity.WRITE })
-                .addResource(TenantConstants.TENANT_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
-                .addOperation(TenantConstants.TENANT_ENDPOINT, "DEFAULT_TENANT", "get")
-                //credentials authorisations
-                .addResource(CredentialsConstants.CREDENTIALS_ENDPOINT, "*", new Activity[] { Activity.READ, Activity.WRITE })
-                .addResource(CredentialsConstants.CREDENTIALS_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
-                .addOperation(CredentialsConstants.CREDENTIALS_ENDPOINT, "DEFAULT_TENANT", "get")
-                //Device Registry authorisations
-                .addResource(RegistrationConstants.REGISTRATION_ENDPOINT, "*", new Activity[] { Activity.READ, Activity.WRITE })
-                .addResource(RegistrationConstants.REGISTRATION_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
-                .addOperation(RegistrationConstants.REGISTRATION_ENDPOINT, "DEFAULT_TENANT", "get");
-
-
-        return new HonoUserAdapter() {
-            @Override
-            public String getName() {
-                return "test-client";
-            }
-
-            @Override
-            public Authorities getAuthorities() {
-                return authorities;
-            }
-        };
-    }
-
 }

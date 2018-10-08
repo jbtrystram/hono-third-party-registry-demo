@@ -29,7 +29,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.6.0</version>
         <configuration>
-            <mainClass>net.trystram.taff.App</mainClass>
+            <mainClass>com.redhat.iot.App</mainClass>
         </configuration>
     </plugin>
     </plugins>
