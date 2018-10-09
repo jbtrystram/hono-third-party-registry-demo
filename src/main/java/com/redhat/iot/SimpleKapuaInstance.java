@@ -113,72 +113,125 @@ public class SimpleKapuaInstance {
             userService.setConfigValues(account.getId(), account.getScopeId(), valueMap);
             userService.setConfigValues(account2.getId(), account2.getScopeId(), valueMap);
 
-            // Create user gateway
-            Properties userprops = new Properties();
-            userprops.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "gw-1");
-            userprops.setProperty(CredentialsConstants.FIELD_TYPE, CredentialsConstants.SECRETS_TYPE_HASHED_PASSWORD);
-            userprops.setProperty(CredentialsConstants.FIELD_AUTH_ID, "gateway");
-            userprops.setProperty("client-id", "gateway-one");
-            userprops.setProperty(CredentialsConstants.FIELD_ENABLED, "true");
-            userprops.setProperty(CredentialsConstants.FIELD_SECRETS,
-                    new JsonArray().add(new JsonObject()
-                            .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2018-01-01T00:00:00+01:00")
-                            .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
-                            .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
-                            .put(CredentialsConstants.FIELD_SECRETS_SALT, "Z3dzYWx0")
-                            .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "CrHirmXdU20qORDRE5gbphS9vUCdl2NhEaAikw6EGTwBevbs1rCwml82cONPNxugZ1D0QHQSnbY4gWJQJi6P4g=="))
-                            .encode());
-
-            UserCreator userCreator = new UserFactoryImpl().newCreator(account.getId(), userprops.getProperty(CredentialsConstants.FIELD_AUTH_ID));
-            userCreator.setEntityAttributes(userprops);
-            User user = userService.create(userCreator);
+            /* now create the credentials for :
+            *  device 4711 :
+            *       - sensor1
+            *       - sensor2
+            *       - little-sensor2
+            *  device gw-1
+            *       - gateway
+            */
 
             // Create user sensor1
-            userprops = new Properties();
-            userprops.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "4711");
-            userprops.setProperty(CredentialsConstants.FIELD_TYPE, CredentialsConstants.SECRETS_TYPE_HASHED_PASSWORD);
-            userprops.setProperty(CredentialsConstants.FIELD_AUTH_ID, "sensor1");
-            userprops.setProperty(CredentialsConstants.FIELD_ENABLED, "true");
-            userprops.setProperty(CredentialsConstants.FIELD_SECRETS,
-                    new JsonArray().add(new JsonObject()
-                            .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-01T14:00:00+01:00")
-                            .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-06-01T14:00:00+01:00")
-                            .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
-                            .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubw==")
-                            .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "C9/T62m1tT4ZxxqyIiyN9fvoEqmL0qnM4/+M+GHHDzr0QzzkAUdGYyJBfxRSe4upDzb6TSC4k5cpZG17p4QCvA===="))
-                            .add(new JsonObject()
-                                    .put(CredentialsConstants.FIELD_SECRETS_NOT_BEFORE, "2017-05-15T14:00:00+01:00")
-                                    .put(CredentialsConstants.FIELD_SECRETS_NOT_AFTER, "2037-05-01T14:00:00+01:00")
-                                    .put(CredentialsConstants.FIELD_SECRETS_HASH_FUNCTION, "sha-512")
-                                    .put(CredentialsConstants.FIELD_SECRETS_SALT, "aG9ubzI=")
-                                    .put(CredentialsConstants.FIELD_SECRETS_PWD_HASH, "QDhkSQcm0HNBybnuc5irvPIgNUJn0iVoQnFSoltLOsDlfxhcQWa99l8Dhh67jSKBr7fXeSvFZ1mEojReAXz18A=="))
-                            .encode());
+            UserCreator sensor1Creator = new UserFactoryImpl().newCreator(account.getId(),"sensor1");
+            Properties userProps = new Properties();
+            userProps.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "4711");
+            sensor1Creator.setEntityAttributes(userProps);
+            User sensor1 = userService.create(sensor1Creator);
 
-            userCreator = new UserFactoryImpl().newCreator(account.getId(), userprops.getProperty(CredentialsConstants.FIELD_AUTH_ID));
-            userCreator.setEntityAttributes(userprops);
-            User user2 = userService.create(userCreator);
-
-            // Create credentials
+            // Create credentials for sensor1
             CredentialCreator credentialCreator;
-            credentialCreator = new CredentialFactoryImpl().newCreator(account.getId(), user.getId(), CredentialType.PASSWORD, "gw-secret", CredentialStatus.ENABLED, null);
+            credentialCreator = new CredentialFactoryImpl().newCreator(
+                    account.getId(),
+                    sensor1.getId(),
+                    CredentialType.PASSWORD,
+                    "hono-secret",
+                    CredentialStatus.ENABLED,
+                    //new Date("2037-06-01T14:00:00+01:00")
+                    null);
             credentialService.create(credentialCreator);
 
-            credentialCreator = new CredentialFactoryImpl().newCreator(account.getId(), user2.getId(), CredentialType.PASSWORD, "hono-secret", CredentialStatus.ENABLED, null);
+            /* Error: Credential of type PASSWORD already exists for this user.
+            credentialCreator = new CredentialFactoryImpl().newCreator(
+                    account.getId(),
+                    sensor1.getId(),
+                    CredentialType.PASSWORD,
+                    "hono-secret",
+                    CredentialStatus.ENABLED,
+                    //new Date("2037-05-01T14:00:00+01:00")
+                    null);
             credentialService.create(credentialCreator);
+            */
+
+
+            // Create user sensor2
+            UserCreator sensor2Creator = new UserFactoryImpl().newCreator(account.getId(),"sensor2");
+            userProps = new Properties();
+            userProps.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "4711");
+            sensor2Creator.setEntityAttributes(userProps);
+            User sensor2 = userService.create(sensor2Creator);
+            // create credentials
+            credentialCreator = new CredentialFactoryImpl().newCreator(
+                    account.getId(),
+                    sensor2.getId(),
+                    CredentialType.PASSWORD,
+                    "hono-secret",
+                    CredentialStatus.ENABLED,
+                    //new Date("2037-06-01T14:00:00+01:00")
+                    null);
+            credentialService.create(credentialCreator);
+
+            // Create user little-sensor2
+            UserCreator littleSensor2Creator = new UserFactoryImpl().newCreator(account.getId(),"little-sensor2");
+            userProps = new Properties();
+            userProps.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "4711");
+            littleSensor2Creator.setEntityAttributes(userProps);
+            User littleSensor2 = userService.create(littleSensor2Creator);
+            // create credentials
+            credentialCreator = new CredentialFactoryImpl().newCreator(
+                    account.getId(),
+                    littleSensor2.getId(),
+                    CredentialType.PASSWORD,
+                    "c2VjcmV0S2V5",
+                    CredentialStatus.ENABLED,
+                    //new Date("2037-06-01T14:00:00+01:00")
+                    null);
+            credentialService.create(credentialCreator);
+
+            /* Error: Credential of type PASSWORD already exists for this user.
+            credentialCreator = new CredentialFactoryImpl().newCreator(
+                    account.getId(),
+                    littleSensor2.getId(),
+                    CredentialType.PASSWORD,
+                    "c2VjcmV0S2V5Mg==",
+                    CredentialStatus.ENABLED,
+                    //new Date("2037-05-01T14:00:00+01:00")
+                    null);
+            credentialService.create(credentialCreator);
+            */
+
+            // Create user gw
+            UserCreator gwUserCreator = new UserFactoryImpl().newCreator(account.getId(),"gateway");
+            userProps = new Properties();
+            userProps.setProperty(CredentialsConstants.FIELD_PAYLOAD_DEVICE_ID, "gw-1");
+            userProps.setProperty("client-id", "gateway-one");
+            gwUserCreator.setEntityAttributes(userProps);
+            User gwUser = userService.create(gwUserCreator);
+            // create credentials
+            credentialCreator = new CredentialFactoryImpl().newCreator(
+                    account.getId(),
+                    gwUser.getId(),
+                    CredentialType.PASSWORD,
+                    "gw-secret",
+                    CredentialStatus.ENABLED,
+                    //new Date("2037-06-01T14:00:00+01:00")
+                    null);
+            credentialService.create(credentialCreator);
+
 
             // Permissions
             List<PermissionData> permissionList = new ArrayList<>();
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.connect, (KapuaEid) user.getScopeId()));
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.write, (KapuaEid) user.getScopeId()));
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.read, (KapuaEid) user.getScopeId()));
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.delete, (KapuaEid) user.getScopeId()));
+            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.connect, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.write, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.read, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.delete, (KapuaEid) sensor1.getScopeId()));
 
-            permissionList.add(new PermissionData(DeviceManagementService.DEVICE_MANAGEMENT_DOMAIN, Actions.write, (KapuaEid) user.getScopeId()));
+            permissionList.add(new PermissionData(DeviceManagementService.DEVICE_MANAGEMENT_DOMAIN, Actions.write, (KapuaEid) sensor1.getScopeId()));
 
             PermissionFactory permissionFactory = new PermissionFactoryImpl();
             AccessInfoCreator accessInfoCreator = new AccessInfoFactoryImpl().newCreator(account.getId());
-            accessInfoCreator.setUserId(user.getId());
-            accessInfoCreator.setScopeId(user.getScopeId());
+            accessInfoCreator.setUserId(sensor1.getId());
+            accessInfoCreator.setScopeId(sensor1.getScopeId());
             Set<Permission> permissions = new HashSet<>();
             for (PermissionData permissionData : permissionList) {
                 Actions action = permissionData.getAction();
