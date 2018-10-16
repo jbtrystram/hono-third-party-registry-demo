@@ -32,10 +32,7 @@ import org.eclipse.kapua.service.authorization.permission.Permission;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import org.eclipse.kapua.service.authorization.permission.shiro.PermissionFactoryImpl;
 import org.eclipse.kapua.service.device.management.DeviceManagementService;
-import org.eclipse.kapua.service.device.registry.Device;
-import org.eclipse.kapua.service.device.registry.DeviceCreator;
-import org.eclipse.kapua.service.device.registry.DeviceFactory;
-import org.eclipse.kapua.service.device.registry.DeviceRegistryService;
+import org.eclipse.kapua.service.device.registry.*;
 import org.eclipse.kapua.service.device.steps.PermissionData;
 import org.eclipse.kapua.service.user.User;
 import org.eclipse.kapua.service.user.UserCreator;
@@ -247,12 +244,17 @@ public class SimpleKapuaInstance {
 
             accessInfoService.create(accessInfoCreator);
 
-            // Create device
+
+            // Create devices
 
             DeviceFactory deviceFactory = locator.getFactory(DeviceFactory.class);
-            DeviceCreator deviceCreator = deviceFactory.newCreator(account.getScopeId(), "test-device");
+            DeviceCreator deviceCreator = deviceFactory.newCreator(account.getScopeId(), "4711");
             deviceCreator.setDisplayName("Test Device");
             Device device = deviceRegistryService.create(deviceCreator);
+
+            deviceCreator = deviceFactory.newCreator(account.getScopeId(), "disabled-device");
+            deviceCreator.setStatus(DeviceStatus.DISABLED);
+            deviceRegistryService.create(deviceCreator);
 
         });
     }

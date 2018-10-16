@@ -12,8 +12,6 @@ import org.eclipse.hono.deviceregistry.DeviceRegistryAmqpServer;
 import org.eclipse.hono.service.auth.AuthenticationService;
 import org.eclipse.hono.service.auth.ClaimsBasedAuthorizationService;
 import org.eclipse.hono.service.auth.HonoSaslAuthenticatorFactory;
-import org.eclipse.hono.service.auth.impl.AuthenticationServerConfigProperties;
-import org.eclipse.hono.service.auth.impl.FileBasedAuthenticationService;
 import org.eclipse.hono.service.credentials.CredentialsAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAmqpEndpoint;
 import org.eclipse.hono.service.registration.RegistrationAssertionHelperImpl;
@@ -24,7 +22,6 @@ import org.eclipse.hono.util.TenantConstants;
 import org.eclipse.kapua.hono.KapuaCredentialsService;
 import org.eclipse.kapua.hono.KapuaRegistrationService;
 import org.eclipse.kapua.hono.KapuaTenantService;
-import org.springframework.core.io.FileSystemResource;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -60,11 +57,6 @@ public class App {
         CredentialsAmqpEndpoint credentialsAmqpEndpoint = new CredentialsAmqpEndpoint(vertx);
         credentialsAmqpEndpoint.setConfiguration(registrationProps);
         server.addEndpoint(credentialsAmqpEndpoint);
-
-        // Authorisation setup.
-        AuthenticationServerConfigProperties authProps = new AuthenticationServerConfigProperties();
-        authProps.setPermissionsPath(new FileSystemResource("src/main/resources/permissions.json"));
-        AuthenticationService auth = new FileBasedAuthenticationService();
 
         server.setSaslAuthenticatorFactory(new HonoSaslAuthenticatorFactory(createAuthenticationService(createUser())));
         server.setAuthorizationService(new ClaimsBasedAuthorizationService());
@@ -114,6 +106,8 @@ public class App {
                 .addResource(RegistrationConstants.REGISTRATION_ENDPOINT, "*", new Activity[] { Activity.READ, Activity.WRITE })
                 .addResource(RegistrationConstants.REGISTRATION_ENDPOINT, new Activity[] {Activity.READ, Activity.WRITE})
                 .addOperation(RegistrationConstants.REGISTRATION_ENDPOINT, "DEFAULT_TENANT", "assert");
+                //.addOperation(RegistrationConstants.REGISTRATION_ENDPOINT, "DEFAULT_TENANT", "register")
+                //.addOperation(RegistrationConstants.REGISTRATION_ENDPOINT, "DEFAULT_TENANT", "deregister");
 
 
         return new HonoUserAdapter() {
