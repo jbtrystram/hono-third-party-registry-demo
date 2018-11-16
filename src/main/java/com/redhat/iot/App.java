@@ -19,7 +19,7 @@ import org.eclipse.hono.service.tenant.TenantAmqpEndpoint;
 import org.eclipse.hono.util.CredentialsConstants;
 import org.eclipse.hono.util.RegistrationConstants;
 import org.eclipse.hono.util.TenantConstants;
-import org.eclipse.kapua.hono.KapuaCredentialsService;
+import org.eclipse.kapua.hono.services.KapuaCredentialsService;
 import org.eclipse.kapua.hono.KapuaRegistrationService;
 import org.eclipse.kapua.hono.KapuaTenantService;
 
