@@ -10,7 +10,7 @@
   <name>kapuaDeviceRegistry</name>
 
     <properties>
-        <hono.version>0.8-M2-SNAPSHOT</hono.version>
+        <hono.version>0.8-SNAPSHOT</hono.version>
     </properties>
 
     <build>
