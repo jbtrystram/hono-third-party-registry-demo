@@ -36,29 +36,6 @@
   </build>
 
   <dependencies>
-    <dependency>
-      <groupId>org.eclipse.kapua</groupId>
-      <artifactId>hono-integration</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-    <groupId>org.eclipse.hono</groupId>
-    <artifactId>hono-service-base</artifactId>
-    <version>${hono.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.hono</groupId>
-      <artifactId>hono-service-device-registry</artifactId>
-      <version>${hono.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <version>3.5.3</version>
-    </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>

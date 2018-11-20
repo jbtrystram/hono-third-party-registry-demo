@@ -9,6 +9,7 @@ import org.eclipse.kapua.broker.BrokerService;
 import org.eclipse.kapua.broker.core.BrokerJAXBContextProvider;
 import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
+import org.eclipse.kapua.commons.setting.system.SystemSettingKey;
 import org.eclipse.kapua.commons.util.xml.JAXBContextProvider;
 import org.eclipse.kapua.commons.util.xml.XmlUtil;
 import org.eclipse.kapua.locator.KapuaLocator;
@@ -34,6 +35,7 @@ import org.eclipse.kapua.service.authorization.permission.shiro.PermissionFactor
 import org.eclipse.kapua.service.device.management.DeviceManagementService;
 import org.eclipse.kapua.service.device.registry.*;
 import org.eclipse.kapua.service.device.steps.PermissionData;
+import org.eclipse.kapua.service.liquibase.KapuaLiquibaseClient;
 import org.eclipse.kapua.service.user.User;
 import org.eclipse.kapua.service.user.UserCreator;
 import org.eclipse.kapua.service.user.UserService;
@@ -52,6 +54,13 @@ public class SimpleKapuaInstance {
     private static DBHelper dbHelper = new DBHelper();
 
     public static void start() throws KapuaException {
+
+        System.setProperty(SystemSettingKey.DB_SCHEMA.key(), "kapuadb");
+        //new KapuaLiquibaseClient("jdbc:h2:mem:kapua;MODE=MySQL", "sa", "").update();
+
+        new KapuaLiquibaseClient("jdbc:h2:tcp://localhost:9092/~/test;MODE=MySQL",
+                "SA", "", Optional.of("kapuadb")).update();
+
 
         dbHelper.setup();
 
