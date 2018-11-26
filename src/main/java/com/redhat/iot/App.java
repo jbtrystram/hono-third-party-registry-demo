@@ -10,6 +10,6 @@ public class App {
         //Server.createWebServer();
 
         SimpleKapuaInstance.start();
-        while(true){}
+        //while(true){}
     }
 }

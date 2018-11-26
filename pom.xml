@@ -11,6 +11,7 @@
 
     <properties>
         <hono.version>0.8-SNAPSHOT</hono.version>
+        <kapua.version>1.1.0-SNAPSHOT</kapua.version>
     </properties>
 
     <build>
@@ -46,28 +47,28 @@
       <dependency>
           <groupId>org.eclipse.kapua</groupId>
           <artifactId>kapua-account-api</artifactId>
-          <version>1.0.0-SNAPSHOT</version>
+          <version>${kapua.version}</version>
       </dependency>
       <dependency>
           <groupId>org.eclipse.kapua</groupId>
           <artifactId>kapua-service-api</artifactId>
-          <version>1.0.0-SNAPSHOT</version>
+          <version>${kapua.version}</version>
       </dependency>
 
       <dependency>
           <groupId>org.eclipse.kapua</groupId>
           <artifactId>kapua-commons</artifactId>
-          <version>1.0.0-SNAPSHOT</version>
+          <version>${kapua.version}</version>
       </dependency>
       <dependency>
           <groupId>org.eclipse.kapua</groupId>
           <artifactId>kapua-broker-core</artifactId>
-          <version>1.0.0-SNAPSHOT</version>
+          <version>${kapua.version}</version>
       </dependency>
       <dependency>
           <groupId>org.eclipse.kapua</groupId>
           <artifactId>kapua-qa-steps</artifactId>
-          <version>1.0.0-SNAPSHOT</version>
+          <version>${kapua.version}</version>
       </dependency>
       <dependency>
           <groupId>junit</groupId>

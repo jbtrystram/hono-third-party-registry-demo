@@ -5,7 +5,7 @@ import io.vertx.core.json.JsonObject;
 import org.eclipse.hono.util.CredentialsConstants;
 import org.eclipse.hono.util.TenantConstants;
 import org.eclipse.kapua.KapuaException;
-import org.eclipse.kapua.broker.BrokerService;
+import org.eclipse.kapua.broker.BrokerDomains;
 import org.eclipse.kapua.broker.core.BrokerJAXBContextProvider;
 import org.eclipse.kapua.commons.model.id.KapuaEid;
 import org.eclipse.kapua.commons.security.KapuaSecurityUtils;
@@ -32,7 +32,7 @@ import org.eclipse.kapua.service.authorization.access.shiro.AccessInfoFactoryImp
 import org.eclipse.kapua.service.authorization.permission.Permission;
 import org.eclipse.kapua.service.authorization.permission.PermissionFactory;
 import org.eclipse.kapua.service.authorization.permission.shiro.PermissionFactoryImpl;
-import org.eclipse.kapua.service.device.management.DeviceManagementService;
+import org.eclipse.kapua.service.device.management.DeviceManagementDomains;
 import org.eclipse.kapua.service.device.registry.*;
 import org.eclipse.kapua.service.device.steps.PermissionData;
 import org.eclipse.kapua.service.liquibase.KapuaLiquibaseClient;
@@ -55,11 +55,12 @@ public class SimpleKapuaInstance {
 
     public static void start() throws KapuaException {
 
+
         System.setProperty(SystemSettingKey.DB_SCHEMA.key(), "kapuadb");
         //new KapuaLiquibaseClient("jdbc:h2:mem:kapua;MODE=MySQL", "sa", "").update();
 
-        new KapuaLiquibaseClient("jdbc:h2:tcp://localhost:9092/~/test;MODE=MySQL",
-                "SA", "", Optional.of("kapuadb")).update();
+        new KapuaLiquibaseClient("jdbc:h2:tcp://localhost:3306/kapuadb;MODE=MySQL",
+                "kapua", "kapua", Optional.of("kapuadb"));
 
 
         dbHelper.setup();
@@ -227,12 +228,12 @@ public class SimpleKapuaInstance {
 
             // Permissions
             List<PermissionData> permissionList = new ArrayList<>();
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.connect, (KapuaEid) sensor1.getScopeId()));
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.write, (KapuaEid) sensor1.getScopeId()));
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.read, (KapuaEid) sensor1.getScopeId()));
-            permissionList.add(new PermissionData(BrokerService.BROKER_DOMAIN, Actions.delete, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerDomains.BROKER_DOMAIN, Actions.connect, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerDomains.BROKER_DOMAIN, Actions.write, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerDomains.BROKER_DOMAIN, Actions.read, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(BrokerDomains.BROKER_DOMAIN, Actions.delete, (KapuaEid) sensor1.getScopeId()));
 
-            permissionList.add(new PermissionData(DeviceManagementService.DEVICE_MANAGEMENT_DOMAIN, Actions.write, (KapuaEid) sensor1.getScopeId()));
+            permissionList.add(new PermissionData(DeviceManagementDomains.DEVICE_MANAGEMENT_DOMAIN, Actions.write, (KapuaEid) sensor1.getScopeId()));
 
             PermissionFactory permissionFactory = new PermissionFactoryImpl();
             AccessInfoCreator accessInfoCreator = new AccessInfoFactoryImpl().newCreator(account.getId());
