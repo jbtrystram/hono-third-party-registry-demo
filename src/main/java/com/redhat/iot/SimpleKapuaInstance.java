@@ -55,14 +55,14 @@ public class SimpleKapuaInstance {
 
     public static void start() throws KapuaException {
 
-
+        /*
         System.setProperty(SystemSettingKey.DB_SCHEMA.key(), "kapuadb");
         //new KapuaLiquibaseClient("jdbc:h2:mem:kapua;MODE=MySQL", "sa", "").update();
 
         new KapuaLiquibaseClient("jdbc:h2:tcp://localhost:3306/kapuadb;MODE=MySQL",
                 "kapua", "kapua", Optional.of("kapuadb"));
 
-
+        */
         dbHelper.setup();
 
         KapuaSecurityUtils.doPrivileged(() -> {

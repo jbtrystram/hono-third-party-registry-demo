@@ -19,9 +19,9 @@
     </appender>
 
     <logger name="liquibase" level="DEBUG" />
-    <!-- <logger name="org.eclipse.hono" level="TRACE"/> -->
+    <logger name="org.eclipse.kapua" level="DEBUG"/>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
